@@ -1,0 +1,5 @@
+= dockit
+
+Generate this with
+    dockit rdoc
+After you have described your command line interface

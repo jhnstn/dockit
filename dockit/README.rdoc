@@ -1,0 +1,6 @@
+= dockit
+
+Describe your project here
+
+:include:dockit.rdoc
+
