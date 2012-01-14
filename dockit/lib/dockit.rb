@@ -6,24 +6,72 @@ module Dockit
 
 
   class Wiki
+
+    attr :merged_file
+
     def initialize(repo)
       @repo = repo
+      @struct =  "Home.md"
+      @local_path = '../.remote_wiki'
+
+      @toc = {}
+      @doc_struct = "#{@local_path}/#{@struct}"
+      @merged_file
+
     end
 
     def fetch
-      if Dir.exists?('../.remote_wiki') then
-        g = Git.open('../.remote_wiki')
+      if Dir.exists?(@local_path) then
+        g = Git.open(@local_path)
         g.reset_hard
+        g.fetch
         g.pull
       else
-          Git.clone(@repo,'../.remote_wiki')
+          Git.clone(@repo,@local_path)
       end
 
 
-      #FileUtils.rm_rf '.temp_wiki_repo'
 
 
     end
+
+    def join
+
+          if File.exists? "#{@local_path}/merged.md" then
+            @merged_file =   "#{@local_path}/merged.md"
+            return IO.read "#{@local_path}/merged.md"
+          end
+
+          if File.readable?(@doc_struct) then
+            merged = ""
+            data = IO.readlines(@doc_struct)
+
+            data.each do |line|
+                line_index = line.to_first_int
+                if(line_index > 0) then
+                  clean_line =  line.sub(/#{line_index}./,"").strip!
+                  if clean_line.match(/\[\[/) then
+                    link = clean_line.gsub(/[\[\]]/,"\s").split('|')
+                    if  !link.last.nil? then
+                      #file_name = link.last.split(/\]\]/).first.sub(/\s/,"-")  << ".md"
+                      file_name = link.last.strip.gsub(/\s/,"-")  << ".md"
+                      merged << "\n" << IO.read("#{@local_path}/#{file_name}")
+
+
+                    end
+                  end
+                end
+            end
+            @merged_file = "#{@local_path}/merged.md"
+              File.open("#{@local_path}/merged.md", 'w') {|f| f.write(merged) }
+            return merged
+
+          end
+
+    end
+
+
+
   end
 
   class Merge
@@ -62,7 +110,7 @@ module Dockit
             end
         end
           File.open("#{@path}/merged.md", 'w') {|f| f.write(merged) }
-        puts merged
+          return merged
       end
 
     end
@@ -124,7 +172,12 @@ module Dockit
 end
 
 
+
+
+
+
 class  String
+
 
     def to_first_int
 
