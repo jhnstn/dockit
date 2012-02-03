@@ -15,9 +15,11 @@ require 'rubygems'
 require 'gli'
 require 'dockit_version'
 require 'dockit'
+require 'dockit/writer'
 
 
 include GLI
+#include Dockit::Writer
 
 program_desc 'Describe your application here'
 
@@ -42,54 +44,30 @@ command :export do |c|
   c.flag :f
   c.action do |global_options,options,args|
 
-    # Your command logic here
-     
-    # If you have any errors, just raise them
-    # raise "that command made no sense"
 
-    # create Toc
-
-   # sidebar = "#{args[0]}/_Sidebar.md"
-
-    #toc = {}
-
-    #master_md = Dockit::Merge.new("#{args[0]}" , "_Sidebar.md")
-    #wiki =  Dockit::Wiki.new("#{args[0]}")
+    wiki =  Dockit::Wiki.new("#{args[0]}")
+    #wiki.cleanup
     #wiki.fetch
 
-    master_md = Dockit::Merge.new()
-    master_md.merge
-    #master_md.toc.each do |line|
-      #puts line
-    #end
+   # wiki.flatten
+   # wiki.join
+
+    wiki.build_toc
+
+
+    #pdf = Dockit::Writer::Pdf.new(wiki)
+
+
+   format = Dockit::Writer::Formatter.new(wiki)
+
+   toc =  format.toc
+   #doc = format.transcribe
+
+   pdf = Dockit::Writer::Pdf.new(toc)
+   pdf.generate
 
 
 
-
-   #puts master_md.toc.inspect
-
-
-   # if File.exist?(sidebar) && File.readable_real?(sidebar) then
-    #  sidebar_data = IO.readlines(sidebar)
-
-
-    #  sidebar_data.each_with_index do |line,i|
-
-     #   puts "line #{i}: #{line.strip!}"
-
-
-     # end
-
-   # end
-
-    #puts args.kind_of?(Array)
-    #files = Dir.entries(args[0])
-    #files.each do  |name|
-
-   # end
-    #Dir.foreach(args) { |filenames|
-     #   filenames.each{ |name| puts name}
-   #}
   end
 end
 

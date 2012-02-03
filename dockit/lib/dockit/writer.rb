@@ -8,8 +8,8 @@ module Dockit
 
 
       def initialize(data)
-        @data = data
 
+        @@data = data
         @export_to = './export/test.pdf'
         if not Dir.exists?('./export') then Dir.mkdir('./export') end
 
@@ -17,17 +17,29 @@ module Dockit
       end
 
       def generate
-              pdf = Prawn::Document.new
-              pdf.text  @data
-              pdf.render_file @export_to
+               Prawn::Document.generate @export_to , :page_size => "LETTER" do
+
+                  text "#{@@data} "
+                  string ="page <page> of <total>"
+                  options =  {
+                      :at => [bounds.right - 150, 0] ,
+                      :width => 150 ,
+                      :align => :right ,
+                      :start_count_at => 1
+                  }
+                  number_pages string , options
+               end
       end
 
     end
 
     class Formatter
 
-      def initialize(file)
-        @file = file
+
+
+
+      def initialize(wiki)
+        @wiki = wiki
         @last_level = 0
 
         @transcribe = {
@@ -41,10 +53,24 @@ module Dockit
         @level_format = ["1" , "1.1" , "1.1.1" , "1.1.1.a"]
         @increment = [0 ,0 , 0, 0]
 
-
+        @spc = Prawn::Text::NBSP
         @tab = Prawn::Text::NBSP * 4
 
       end
+
+
+      def toc
+
+        toc = ""
+
+
+        @wiki.toc.each do |key , value |
+            label = value.gsub(/[\[\]]/,"").split('|').first
+            toc <<   "#{@tab}" * (key.count ".")  << "#{key}  #{label}" << "\n"
+         end
+           toc
+      end
+
 
       def transcribe
 
